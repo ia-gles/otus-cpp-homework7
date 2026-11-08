@@ -3,51 +3,51 @@ cmake_minimum_required(VERSION 3.12)
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 
-project(helloworld VERSION ${PROJECT_VERSION})
+project(bulk VERSION ${PROJECT_VERSION})
 
-option(WITH_BOOST_TEST "Whether to build Boost test" OFF)
-option(WITH_GOOGLE_TEST "Whether to build Google test" ON)
+option(WITH_BOOST_TEST "Whether to build Boost test" ON)
+option(WITH_GOOGLE_TEST "Whether to build Google test" OFF)
 
 configure_file(version.h.in version.h)
 
-add_executable(helloworld_cli main.cpp)
-add_library(helloworld lib.cpp)
+add_executable(bulk main.cpp)
+add_library(bulk_lib lib.cpp)
 
-set_target_properties(helloworld_cli helloworld PROPERTIES
-    CXX_STANDARD 14
+set_target_properties(bulk bulk_lib PROPERTIES
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(helloworld
+target_include_directories(bulk_lib
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 
-target_link_libraries(helloworld_cli PRIVATE
-    helloworld
+target_link_libraries(bulk PRIVATE
+    bulk_lib
 )
 
 if(WITH_BOOST_TEST)
     find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-    add_executable(test_version test_version.cpp)
+    add_executable(bulk_test test_version.cpp)
 
-    set_target_properties(test_version PROPERTIES
-        CXX_STANDARD 14
+    set_target_properties(bulk_test PROPERTIES
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
 
-    set_target_properties(test_version PROPERTIES
+    set_target_properties(bulk_test PROPERTIES
         COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK
         INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
     )
 
-    target_link_libraries(test_version
+    target_link_libraries(bulk_test
         ${Boost_LIBRARIES}
-        helloworld
+        bulk_lib
     )
 endif()
 
 if(WITH_GOOGLE_TEST)
-    add_executable(gtest_version gtest_version.cpp)
+    add_executable(bulk_gtest gtest_version.cpp)
 
     include(FetchContent)
     FetchContent_Declare(
@@ -60,68 +60,66 @@ if(WITH_GOOGLE_TEST)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
 
-    set_target_properties(gtest_version PROPERTIES
-        CXX_STANDARD 14
+    set_target_properties(bulk_gtest PROPERTIES
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     
-    target_link_libraries(gtest_version
+    target_link_libraries(bulk_gtest
         GTest::gtest_main
-        helloworld
+        bulk_lib
     )
 endif()
 
-
-
 if (MSVC)
-    target_compile_options(helloworld_cli PRIVATE
+    target_compile_options(bulk PRIVATE
         /W4
     )
-    target_compile_options(helloworld PRIVATE
+    target_compile_options(bulk_lib PRIVATE
         /W4
     )
     if(WITH_BOOST_TEST)
-        target_compile_options(test_version PRIVATE
+        target_compile_options(bulk_test PRIVATE
             /W4
         )
     endif()
 else ()
-    target_compile_options(helloworld_cli PRIVATE
+    target_compile_options(bulk PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
-    target_compile_options(helloworld PRIVATE
+    target_compile_options(bulk_lib PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
     if(WITH_BOOST_TEST)
-        target_compile_options(test_version PRIVATE
+        target_compile_options(bulk_test PRIVATE
             -Wall -Wextra -pedantic -Werror
         )
     endif()
     if(WITH_GOOGLE_TEST)
-        target_compile_options(gtest_version PRIVATE
-            -Wall -Wextra -pedantic -Werror
-        )
+	target_compile_options(bulk_gtest PRIVATE
+	    -Wall -Wextra -pedantic -Werror
+	)
     endif()
 endif()
 
-install(TARGETS helloworld_cli RUNTIME DESTINATION bin)
+install(TARGETS bulk RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
-set(CPACK_PACKAGE_CONTACT example@example.com)
+set(CPACK_PACKAGE_CONTACT myregs08@mail.ru)
 include(CPack)
 
 if(WITH_BOOST_TEST)
     enable_testing()
-    add_test(test_version test_version)
+    add_test(bulk_test bulk_test)
 endif()
 
 if(WITH_GOOGLE_TEST)
     enable_testing()
-    add_test(gtest_version gtest_version)
+    add_test(bulk_gtest bulk_gtest)
 
     include(GoogleTest)
-    gtest_discover_tests(gtest_version)
+    gtest_discover_tests(bulk_gtest)
 endif()

@@ -1,3 +1,3 @@
-# otus-cpp-homework1
+# otus-cpp-homework7
 
-# Try use GoogleTest
+# Bulk
